@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Net;
+﻿using System;
+using System.Collections.Generic;
 
 class Tile
 {
@@ -15,16 +15,8 @@ class Tile
         this.revealed = revealed;
     }
 
-    public bool isBomb()
-    {
-        return bomb;
-    }
-
-    public int getValue()
-    {
-        return value;
-    }
-
+    public bool isBomb() => bomb;
+    public int getValue() => value;
     public void increment()
     {
         value++;
@@ -45,6 +37,8 @@ class Tile
         revealed = true;
         return bomb;
     }
+
+    public bool isRevealed() => revealed;
 
     public void toggleFlag()
     {
@@ -67,6 +61,11 @@ class Pos
 
         return result;
     }
+
+    public (int, int) coord()
+    {
+        return (x, y);
+    }
 }
 
 
@@ -79,6 +78,10 @@ class GameBoard
     int revealedTiles;
     Tile[,] tiles;
     Pos[] bombs;
+    Pos initialClick;
+    Pos[] adjTiles = [new Pos(-1, -1), new Pos(0, -1), new Pos(1, -1),
+                        new Pos(-1, 0),                  new Pos(1, 0),
+                        new Pos(-1, 1), new Pos(0, 1), new Pos(1, 1)];
 
     public GameBoard(int size, int mines)
     {
@@ -106,10 +109,10 @@ class GameBoard
 
         while (placed < mineCount)
         {
-            int x = rnd.Next(0, size - 1);
-            int y = rnd.Next(0, size - 1);
+            int x = rnd.Next(0, size);
+            int y = rnd.Next(0, size);
 
-            if (!tiles[x, y].isBomb())
+            if (!tiles[x, y].isBomb() && !((x, y) == initialClick.coord()))
             {
                 tiles[x, y].setValue(-1);
                 bombs[placed] = new Pos(x, y);
@@ -120,9 +123,7 @@ class GameBoard
 
     public void setValues()
     {
-        Pos[] adjTiles = [new Pos(-1, -1), new Pos(0, -1), new Pos(1, -1),
-                          new Pos(-1, 0),                  new Pos(1, 0),
-                          new Pos(-1, 1), new Pos(0, 1), new Pos(1, 1)];
+        
 
         foreach (Pos bomb in bombs)
         {
@@ -139,39 +140,84 @@ class GameBoard
         }
     }
 
-    public void printBoard()
+    public void printBoard(int a, int b)
     {
+        initialClick =new Pos(a, b);
         setBombs();
         setValues();
+        initialReveal(initialClick);
 
         for (int y = 0; y < size; y++)
         {
             for (int x = 0; x < size; x++)
             {
-                int value = tiles[x, y].getValue();
-                if (value == -1)
+                if (tiles[x, y].isRevealed())
                 {
-                    Console.Write("X ");
+                    int value = tiles[x, y].getValue();
+
+                    if (value == -1)
+                    {
+                        Console.Write("X ");
+                    }
+                    else
+                    {
+
+                        Console.Write(value + " ");
+                    }
                 }
                 else
                 {
-                    Console.Write(value + " ");
+                    Console.Write("[]");
                 }
-                
+
+
             }
             Console.WriteLine();
         }
     }
 
-
-
-}
-
-class Program
-{
-    static void Main(string[] args)
+    public void revealEmpty(Pos start)
     {
-        GameBoard game = new GameBoard(20, 50);
-        game.printBoard();
+        if (tiles[start.x, start.y].isRevealed())
+        return;
+
+        tiles[start.x, start.y].Reveal();
+
+        if (tiles[start.x, start.y].getValue() == 0)
+        {
+            foreach (Pos adj in adjTiles)
+            {
+                Pos nextTile = start.Add(adj);
+                int x = nextTile.x;
+                int y = nextTile.y;
+                if ((x >= 0 && x < size) && (y >= 0 && y < size))
+                {
+                    revealEmpty(nextTile);
+                }
+            }
+        }
     }
+
+
+    public void initialReveal(Pos start)
+    {
+        initialClick = start;
+        setBombs();
+        setValues();
+        revealEmpty(start);
+
+    }
+
 }
+
+
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            GameBoard game = new GameBoard(25, 50);
+            
+            game.printBoard(5, 5);
+        }
+    }
