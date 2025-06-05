@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Xml.Schema;
 
 class Tile
 {
@@ -79,10 +77,10 @@ class GameBoard
     int revealedTiles;
     Tile[,] tiles;
     Pos[] bombs;
-    Pos initialClick;
+    Pos? initialClick;
     Pos[] adjTiles = [new Pos(-1, -1), new Pos(0, -1), new Pos(1, -1),
-                        new Pos(-1, 0),                  new Pos(1, 0),
-                        new Pos(-1, 1), new Pos(0, 1), new Pos(1, 1)];
+                      new Pos(-1, 0),                  new Pos(1, 0),
+                      new Pos(-1, 1),  new Pos(0, 1),  new Pos(1, 1)];
 
     public GameBoard(int size, int mines)
     {
@@ -106,35 +104,29 @@ class GameBoard
     {
         Random rnd = new Random();
         int placed = 0;
-        
-        
-
 
         while (placed < mineCount)
         {
             int x = rnd.Next(0, size);
             int y = rnd.Next(0, size);
 
+            if (Math.Abs(x - initialClick!.x) <= 1 && Math.Abs(y - initialClick.y) <= 1)
+                continue;
 
-            if (Math.Abs(x - initialClick.x) <= 1 && Math.Abs(y - initialClick.y) <= 1)
-            continue;
-           
             if (!tiles[x, y].isBomb() && !((x, y) == initialClick.coord()))
             {
                 tiles[x, y].setValue(-1);
                 bombs[placed] = new Pos(x, y);
                 placed++;
             }
-            
+
         }
     }
-    
-    
+
+
 
     public void setValues()
     {
-
-
         foreach (Pos bomb in bombs)
         {
             foreach (Pos tile in adjTiles)
@@ -152,7 +144,7 @@ class GameBoard
 
     public void printBoard(int a, int b)
     {
-        initialClick =new Pos(a, b);
+        initialClick = new Pos(a, b);
         setBombs();
         setValues();
         initialReveal(initialClick);
@@ -188,7 +180,7 @@ class GameBoard
     public void revealEmpty(Pos start)
     {
         if (tiles[start.x, start.y].isRevealed())
-        return;
+            return;
 
         tiles[start.x, start.y].Reveal();
 
@@ -216,13 +208,30 @@ class GameBoard
         revealEmpty(start);
     }
 
-}
-    class Program
+    public void testGenerate()
     {
-        static void Main(string[] args)
-        {
-            GameBoard game = new GameBoard(25, 50);
-            
-            game.printBoard(5, 5);
-        }
+        Random rnd = new Random();
+
+        int x = rnd.Next(0, size);
+        int y = rnd.Next(0, size);
+
+        printBoard(x, y);
     }
+
+    public void reveal(int x, int y)
+    {
+       Pos pos = new Pos(x, y);
+        revealEmpty(pos);
+    }
+
+}
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        GameBoard game = new GameBoard(50, 250);
+
+        game.testGenerate();
+    }
+}
