@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Xml.Schema;
 
 class Tile
 {
@@ -105,6 +106,8 @@ class GameBoard
     {
         Random rnd = new Random();
         int placed = 0;
+        
+        
 
 
         while (placed < mineCount)
@@ -112,18 +115,25 @@ class GameBoard
             int x = rnd.Next(0, size);
             int y = rnd.Next(0, size);
 
+
+            if (Math.Abs(x - initialClick.x) <= 1 && Math.Abs(y - initialClick.y) <= 1)
+            continue;
+           
             if (!tiles[x, y].isBomb() && !((x, y) == initialClick.coord()))
             {
                 tiles[x, y].setValue(-1);
                 bombs[placed] = new Pos(x, y);
                 placed++;
             }
+            
         }
     }
+    
+    
 
     public void setValues()
     {
-        
+
 
         foreach (Pos bomb in bombs)
         {
@@ -161,7 +171,6 @@ class GameBoard
                     }
                     else
                     {
-
                         Console.Write(value + " ");
                     }
                 }
@@ -205,13 +214,9 @@ class GameBoard
         setBombs();
         setValues();
         revealEmpty(start);
-
     }
 
 }
-
-
-
     class Program
     {
         static void Main(string[] args)
