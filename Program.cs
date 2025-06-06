@@ -105,7 +105,7 @@ public class GameBoard
 
     public int getSize() => size;
 
-    public Tile getTile(int x, int y) => tiles[x, y];
+    public Tile tile(int x, int y) => tiles[x, y];
 
     public void setBombs()
     {
