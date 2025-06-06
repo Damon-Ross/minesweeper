@@ -1,6 +1,9 @@
 ﻿using System;
+using Gtk;
+using Gdk;
 
-class Tile
+
+public class Tile
 {
     bool revealed;
     bool bomb;
@@ -46,7 +49,7 @@ class Tile
 
 }
 
-class Pos
+public class Pos
 {
     public int x, y;
 
@@ -68,7 +71,7 @@ class Pos
 }
 
 
-class GameBoard
+public class GameBoard
 {
     int size;
     int mineCount;
@@ -99,6 +102,10 @@ class GameBoard
         bombs = new Pos[mineCount];
 
     }
+
+    public int getSize() => size;
+
+    public Tile getTile(int x, int y) => tiles[x, y];
 
     public void setBombs()
     {
@@ -230,8 +237,10 @@ class Program
 {
     static void Main(string[] args)
     {
-        GameBoard game = new GameBoard(50, 250);
+        // GameBoard game = new GameBoard(50, 250);
 
-        game.testGenerate();
+        // game.testGenerate();
+        GameWindow.run(25, 10);
+        
     }
 }
