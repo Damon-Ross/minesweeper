@@ -1,6 +1,5 @@
 using Gdk;
 using Gtk;
-using System;
 using Window = Gtk.Window;
 
 class Assets
@@ -22,138 +21,97 @@ class Assets
     }
 }
 
-public enum tileStates{ HIDDEN, REVEALED, FLAGGED };
-
-public class TileWidget : EventBox
-{
-    int x;
-    int y;
-    int size;
-    int value;
-    Pos position;
-    tileStates state;
-    Image image;
-    Assets assets;
-
-    public TileWidget(int x, int y, int size, int value = 0)
-    {
-        position = new Pos(x, y);
-        state = tileStates.HIDDEN;
-        this.size = size;
-        assets = new Assets(this.size);
-        image = new Image(assets.tile);
-        Add(image);
-
-        Events |= EventMask.ButtonPressMask;
-        ButtonPressEvent += OnClick;
-
-    }
-
-    void OnClick(object o, ButtonPressEventArgs args)
-    {
-        if (args.Event.Button == 1)
-        {
-            reveal();
-        }
-        else if (args.Event.Button == 3)
-        {
-            flag();
-        }
-    }
-
-    public bool exploded() => state == tileStates.REVEALED && value == -1;
-    public Pos getPos() => position;
-    public int Value
-    {
-        get => value;
-        set => this.value = value;
-    }
-    
-    public void reveal()
-    {
-        if (state == tileStates.HIDDEN)
-        {
-            if (value == -1)
-            {
-                image.Pixbuf = assets.bomb;
-                state = tileStates.REVEALED;
-                return;
-            }
-            image.Pixbuf = assets.numbers[value];
-            state = tileStates.REVEALED;
-        }
-
-    }
-
-    public void flag()
-    {
-         if (state == tileStates.HIDDEN)
-        {
-            image.Pixbuf = assets.flag;
-            state = tileStates.FLAGGED;
-        } else if (state == tileStates.FLAGGED)
-        {
-            image.Pixbuf = assets.tile;
-            state = tileStates.HIDDEN;
-        }
-    }
-}
 
 public class GameWindow : Window
 {
-    bool isFirstClick = true;
+    const int Square = 34;
+    int size;
     GameBoard board;
     Grid grid;
-    int size;
-    const int Square = 34;
+    EventBox[,] tileBoxes;
+    Image[,] tileImages;
     Assets assets;
-    TileWidget[,] gridArray;
+    bool isFirstClick = true;
 
-    public GameWindow(int size, int mines) : base("minesweeper")
+    public GameWindow(int size, int mineCount) : base("Minesweeper")
     {
         this.size = size;
-        board = new GameBoard(size, mines);
-        Resize(Square * board.getSize(), Square * board.getSize());
+        board = new GameBoard(size, mineCount);
         assets = new Assets(Square);
-        gridArray = new TileWidget[size, size]!;
-        grid = makeGrid();
+
+        Resize(size * Square, size * Square);
+
+        tileBoxes = new EventBox[size, size];
+        tileImages = new Image[size, size];
+        grid = new Grid();
+
+        createGrid();
         Add(grid);
-
     }
 
-    Grid makeGrid()
+    void createGrid()
     {
-        Grid grid = new Grid();
-
-        for (int x = 0; x < board.getSize(); x++)
+        for (int x = 0; x < size; x++)
         {
-            for (int y = 0; y < board.getSize(); y++)
+            for (int y = 0; y < size; y++)
             {
-                gridArray[x, y] = new TileWidget(x, y, Square);
-                grid.Attach(new TileWidget(x, y, Square), x, y, 1, 1);
+                Image img = new Image(assets.tile);
+                EventBox box = [img];
+
+                int xCopy = x;
+                int yCopy = y;
+
+                box.ButtonPressEvent += (o, args) =>
+                {
+                    if (isFirstClick)
+                    {
+                        board.initialReveal(new Pos(xCopy, yCopy));
+                        isFirstClick = false;
+                    }
+
+                    if (args.Event.Button == 1) 
+                    {
+                        if(!board.tile(xCopy, yCopy).isFlagged())
+                            board.reveal(xCopy, yCopy);
+                    }
+                    else if (args.Event.Button == 3) 
+                    {
+                        board.tile(xCopy, yCopy).toggleFlag();
+                    }
+
+                    updateGrid();
+                };
+
+                tileBoxes[x, y] = box;
+                tileImages[x, y] = img;
+
+                grid.Attach(box, x, y, 1, 1);
             }
         }
-        return grid;
     }
 
-    public void setGridValues()
+    void updateGrid()
     {
-        for (int x = 0; x < board.getSize(); x++)
+        for (int x = 0; x < size; x++)
         {
-            for (int y = 0; y < board.getSize(); y++)
+            for (int y = 0; y < size; y++)
             {
-                gridArray[x, y].Value = board.tile(x, y).getValue();
-            }
-        }
-    }
+                Tile tile = board.tile(x, y);
+                Image img = tileImages[x, y];
 
-    public void updateGrid()
-    {
-        for (int x = 0; x < board.getSize(); x++)
-        {
-            for (int y = 0; y < board.getSize(); y++)
-            {
-                
+                if (tile.isRevealed())
+                {
+                    int val = tile.getValue();
+                    img.Pixbuf = (val == -1) ? assets.bomb : assets.numbers[val];
+                }
+                else if (tile.isFlagged())
+                {
+                    img.Pixbuf = assets.flag;
+                }
+                else
+                {
+                    img.Pixbuf = assets.tile;
+                }
             }
         }
     }
@@ -167,8 +125,8 @@ public class GameWindow : Window
     public static void run(int size, int mines)
     {
         Application.Init();
-        GameWindow w = new GameWindow(size, mines);
-        w.ShowAll();
+        GameWindow window = new GameWindow(size, mines);
+        window.ShowAll();
         Application.Run();
     }
 }
