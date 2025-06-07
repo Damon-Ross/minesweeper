@@ -1,13 +1,10 @@
 ﻿using System;
-using Gtk;
-using Gdk;
-
 
 public class Tile
 {
     bool revealed;
     bool bomb;
-    bool flagged;
+    bool flagged; 
     int value;
 
     public Tile(int value = 0, bool bomb = false, bool revealed = false)
@@ -41,21 +38,24 @@ public class Tile
     }
 
     public bool isRevealed() => revealed;
+    public bool isFlagged() => flagged;
 
     public void toggleFlag()
     {
-        flagged = !flagged;
+        if (!revealed)
+        {
+            flagged = !flagged;
+        }
     }
 
 }
 
 public class Pos
 {
-    public int x, y;
+    public int x;
+    public int y;
 
     public Pos(int x, int y) { this.x = x; this.y = y; }
-
-    public override string ToString() => $"({x}, {y})";
 
     public Pos Add(Pos newPos)
     {
@@ -129,7 +129,6 @@ public class GameBoard
 
         }
     }
-
 
 
     public void setValues()
@@ -237,10 +236,6 @@ class Program
 {
     static void Main(string[] args)
     {
-        // GameBoard game = new GameBoard(50, 250);
-
-        // game.testGenerate();
-        GameWindow.run(25, 10);
-        
+        GameWindow.run(25, 100);
     }
 }
