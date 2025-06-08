@@ -69,14 +69,19 @@ public class GameWindow : Window
                         isFirstClick = false;
                     }
 
-                    if (args.Event.Button == 1) 
+                    if (args.Event.Button == 1)
                     {
-                        if(!board.tile(xCopy, yCopy).isFlagged())
+                        if (!board.tiles[xCopy, yCopy].isFlagged())
                             board.reveal(xCopy, yCopy);
+                        if (board.tiles[xCopy, yCopy].bomb)
+                        {
+                                
+                            }
                     }
-                    else if (args.Event.Button == 3) 
+                    else if (args.Event.Button == 3)
                     {
-                        board.tile(xCopy, yCopy).toggleFlag();
+                        board.tiles[xCopy, yCopy].toggleFlag();
+                        board.flagCount++;
                     }
 
                     updateGrid();
@@ -96,12 +101,12 @@ public class GameWindow : Window
         {
             for (int y = 0; y < size; y++)
             {
-                Tile tile = board.tile(x, y);
+                Tile tile = board.tiles[x, y];
                 Image img = tileImages[x, y];
 
                 if (tile.isRevealed())
                 {
-                    int val = tile.getValue();
+                    int val = tile.value;
                     img.Pixbuf = (val == -1) ? assets.bomb : assets.numbers[val];
                 }
                 else if (tile.isFlagged())
