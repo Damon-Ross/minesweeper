@@ -5,7 +5,7 @@ using Window = Gtk.Window;
 class Assets
 {
     public Pixbuf[] numbers = new Pixbuf[9];
-    public Pixbuf? bomb, flag, tile;
+    public Pixbuf? bomb, flag, tile, firstBomb;
 
     public Assets(int size)
     {
@@ -18,9 +18,9 @@ class Assets
         bomb = new Pixbuf("assets/bomb.png", size, size);
         flag = new Pixbuf("assets/flag.png", size, size);
         tile = new Pixbuf("assets/tile.png", size, size);
+        firstBomb = new Pixbuf("assets/firstBomb.png", size, size);
     }
 }
-
 
 public class GameWindow : Window
 {
@@ -60,9 +60,13 @@ public class GameWindow : Window
 
                 int xCopy = x;
                 int yCopy = y;
-
+                
                 box.ButtonPressEvent += (o, args) =>
                 {
+                    if (board.winState == -1)
+                    {
+                        return;
+                    }
                     if (isFirstClick)
                     {
                         board.initialReveal(new Pos(xCopy, yCopy));
@@ -75,8 +79,9 @@ public class GameWindow : Window
                             board.reveal(xCopy, yCopy);
                         if (board.tiles[xCopy, yCopy].bomb)
                         {
-                                
-                            }
+                            board.winState = -1;
+                            board.tiles[xCopy, yCopy].firstBomb = true;
+                        }
                     }
                     else if (args.Event.Button == 3)
                     {
@@ -86,6 +91,7 @@ public class GameWindow : Window
 
                     updateGrid();
                 };
+                
 
                 tileBoxes[x, y] = box;
                 tileImages[x, y] = img;
@@ -103,11 +109,21 @@ public class GameWindow : Window
             {
                 Tile tile = board.tiles[x, y];
                 Image img = tileImages[x, y];
-
+                if (board.winState == -1)
+                {
+                    if (tile.bomb)
+                    {
+                        tile.Reveal();
+                    }
+                }
                 if (tile.isRevealed())
                 {
                     int val = tile.value;
                     img.Pixbuf = (val == -1) ? assets.bomb : assets.numbers[val];
+                    if (tile.firstBomb)
+                    {
+                        img.Pixbuf = assets.firstBomb;
+                    }
                 }
                 else if (tile.isFlagged())
                 {

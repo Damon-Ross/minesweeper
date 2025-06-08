@@ -4,19 +4,20 @@ public class Tile
 {
     bool revealed;
     public bool bomb { get; private set; }
-    bool flagged; 
-    public int value
-    {
-        get => value;
-        set
-        {
-            this.value = value;
-            if (value == -1)
-            {
-                bomb = true;
-            }
-        }
-    }
+    bool flagged;
+    public bool firstBomb { get; set; } = false;
+    public int value;
+    // {
+    //     get => value;
+    //     set
+    //     {
+    //         this.value = value;
+    //         if (value == -1)
+    //         {
+    //             bomb = true;
+    //         }
+    //     }
+    // }
 
     public Tile(int value = 0, bool bomb = false, bool revealed = false)
     {
@@ -24,7 +25,6 @@ public class Tile
         this.bomb = bomb;
         this.revealed = revealed;
     }
-
 
     public void setValue(int value)
     {
@@ -123,7 +123,7 @@ public class GameBoard
 
             if (!tiles[x, y].bomb && !((x, y) == initialClick.coord()))
             {
-                tiles[x, y].value = -1;
+                tiles[x, y].setValue(-1);
                 bombs[placed] = new Pos(x, y);
                 placed++;
             }
@@ -196,7 +196,7 @@ public class GameBoard
                 Pos nextTile = start.Add(adj);
                 int x = nextTile.x;
                 int y = nextTile.y;
-                if ((x >= 0 && x < size) && (y >= 0 && y < size))
+                if ((x >= 0 && x < size) && (y >= 0 && y < size) && (!tiles[x, y].isFlagged()))
                 {
                     revealEmpty(nextTile);
                 }
