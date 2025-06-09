@@ -1,3 +1,5 @@
+using System;
+using Cairo;
 using Gdk;
 using Gtk;
 using Window = Gtk.Window;
@@ -75,13 +77,26 @@ public class GameWindow : Window
 
                     if (args.Event.Button == 1)
                     {
-                        if (!board.tiles[xCopy, yCopy].isFlagged())
-                            board.reveal(xCopy, yCopy);
-                        if (board.tiles[xCopy, yCopy].bomb)
+                        if (!board.tiles[xCopy, yCopy].flagged)
                         {
-                            board.winState = -1;
-                            board.tiles[xCopy, yCopy].firstBomb = true;
+                            board.reveal(xCopy, yCopy);
+                            if (board.tiles[xCopy, yCopy].bomb)
+                            {
+                                board.winState = -1;
+                                board.tiles[xCopy, yCopy].firstBomb = true;
+                            }
                         }
+                        if (board.tiles[xCopy, yCopy].revealed)
+                        {
+                            board.revealAdj(new Pos(xCopy, yCopy), out Pos? bomb);
+                            Console.WriteLine(bomb == null ? "null" : bomb.ToString());
+                            if (!(bomb == null))
+                            {
+                                Console.WriteLine(bomb.ToString());
+                                board.winState = -1;
+                                board.tiles[bomb.x, bomb.y].firstBomb = true;
+                            }
+                            }
                     }
                     else if (args.Event.Button == 3)
                     {
@@ -116,7 +131,7 @@ public class GameWindow : Window
                         tile.Reveal();
                     }
                 }
-                if (tile.isRevealed())
+                if (tile.revealed)
                 {
                     int val = tile.value;
                     img.Pixbuf = (val == -1) ? assets.bomb : assets.numbers[val];
@@ -125,7 +140,7 @@ public class GameWindow : Window
                         img.Pixbuf = assets.firstBomb;
                     }
                 }
-                else if (tile.isFlagged())
+                else if (tile.flagged)
                 {
                     img.Pixbuf = assets.flag;
                 }

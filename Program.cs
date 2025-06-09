@@ -2,22 +2,11 @@
 
 public class Tile
 {
-    bool revealed;
+    public bool revealed { get; set; }
     public bool bomb { get; private set; }
-    bool flagged;
+    public bool flagged { get; set; }
     public bool firstBomb { get; set; } = false;
     public int value;
-    // {
-    //     get => value;
-    //     set
-    //     {
-    //         this.value = value;
-    //         if (value == -1)
-    //         {
-    //             bomb = true;
-    //         }
-    //     }
-    // }
 
     public Tile(int value = 0, bool bomb = false, bool revealed = false)
     {
@@ -42,9 +31,6 @@ public class Tile
         return bomb;
     }
 
-    public bool isRevealed() => revealed;
-    public bool isFlagged() => flagged;
-
     public void toggleFlag()
     {
         if (!revealed)
@@ -68,6 +54,7 @@ public class Pos
 
         return result;
     }
+    public override string ToString() => $"({x}, {y})";
 
      public (int, int) coord()
     {
@@ -107,6 +94,8 @@ public class GameBoard
         bombs = new Pos[mineCount];
 
     }
+    public Tile tileAtPos(Pos pos) => tiles[pos.x, pos.y];
+    bool inRange(int x, int y) => (x >= 0 && x < size) && (y >= 0 && y < size);
 
     public void setBombs()
     {
@@ -139,7 +128,7 @@ public class GameBoard
                 Pos nextTile = bomb.Add(tile);
                 int x = nextTile.x;
                 int y = nextTile.y;
-                if ((x >= 0 && x < size) && (y >= 0 && y < size) && (!tiles[x, y].bomb))
+                if (inRange(x, y) && (!tiles[x, y].bomb))
                 {
                     tiles[x, y].value++;
                 }
@@ -158,7 +147,7 @@ public class GameBoard
         {
             for (int x = 0; x < size; x++)
             {
-                if (tiles[x, y].isRevealed())
+                if (tiles[x, y].revealed)
                 {
                     int value = tiles[x, y].value;
 
@@ -182,11 +171,55 @@ public class GameBoard
         }
     }
 
-    public void revealEmpty(Pos start)
+    int adjFlags(Pos pos)
     {
-        if (tiles[start.x, start.y].isRevealed())
-            return;
+        int count = 0;
+        foreach (Pos adj in adjTiles)
+        {
+            Pos nextTile = pos.Add(adj);
+            int x = nextTile.x;
+            int y = nextTile.y;
+            if (inRange(x, y) && tiles[x, y].flagged)
+            {
+                count++;
+            }
+        }
+        return count;
+    }
 
+    public void revealAdj(Pos start, out Pos? bomb)
+    {
+        Pos? tempBomb = null;
+
+        Tile tile = tileAtPos(start);
+        if (adjFlags(start) == tile.value)
+        {
+            foreach (Pos adj in adjTiles)
+            {
+                Pos nextTile = start.Add(adj);
+                int x = nextTile.x;
+                int y = nextTile.y;
+                if (inRange(x, y) && (!tiles[x, y].flagged))
+                {
+                    if (tiles[x, y].bomb)
+                        tempBomb = new Pos(x, y);
+                    revealEmpty(nextTile, out bomb);
+                }
+            }
+        }
+        bomb = tempBomb;
+    }
+
+
+    public void revealEmpty(Pos start, out Pos? bomb)
+    {
+
+        if (tiles[start.x, start.y].revealed)
+        {
+            bomb = null;
+            return;
+        }
+        Pos? tempBomb = null;
         tiles[start.x, start.y].Reveal();
 
         if (tiles[start.x, start.y].value == 0)
@@ -196,12 +229,15 @@ public class GameBoard
                 Pos nextTile = start.Add(adj);
                 int x = nextTile.x;
                 int y = nextTile.y;
-                if ((x >= 0 && x < size) && (y >= 0 && y < size) && (!tiles[x, y].isFlagged()))
+                if (inRange(x, y) && (!tiles[x, y].flagged))
                 {
-                    revealEmpty(nextTile);
+                    revealEmpty(nextTile, out bomb);
+                    if (tiles[x, y].bomb)
+                        tempBomb = new Pos(x, y);
                 }
             }
         }
+        bomb = tempBomb;
     }
 
     public void initialReveal(Pos start)
@@ -209,7 +245,7 @@ public class GameBoard
         initialClick = start;
         setBombs();
         setValues();
-        revealEmpty(start);
+        revealEmpty(start, out _);
     }
 
     public void testGenerate()
@@ -224,8 +260,8 @@ public class GameBoard
 
     public void reveal(int x, int y)
     {
-       Pos pos = new Pos(x, y);
-        revealEmpty(pos);
+        Pos pos = new Pos(x, y);
+        revealEmpty(pos, out _);
     }
 
 }
@@ -234,6 +270,6 @@ class Program
 {
     static void Main(string[] args)
     {
-        GameWindow.run(10, 20);
+        GameWindow.run(10, 10);
     }
 }
