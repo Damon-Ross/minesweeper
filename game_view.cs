@@ -77,33 +77,12 @@ public class GameWindow : Window
 
                     if (args.Event.Button == 1)
                     {
-                        if (!board.tiles[xCopy, yCopy].flagged)
-                        {
-                            board.reveal(xCopy, yCopy);
-                            if (board.tiles[xCopy, yCopy].bomb)
-                            {
-                                board.winState = -1;
-                                board.tiles[xCopy, yCopy].firstBomb = true;
-                            }
-                        }
-                        if (board.tiles[xCopy, yCopy].revealed)
-                        {
-                            board.revealAdj(new Pos(xCopy, yCopy), out Pos? bomb);
-                            Console.WriteLine(bomb == null ? "null" : bomb.ToString());
-                            if (!(bomb == null))
-                            {
-                                Console.WriteLine(bomb.ToString());
-                                board.winState = -1;
-                                board.tiles[bomb.x, bomb.y].firstBomb = true;
-                            }
-                            }
+                        rightClick(xCopy, yCopy);
                     }
                     else if (args.Event.Button == 3)
                     {
-                        board.tiles[xCopy, yCopy].toggleFlag();
-                        board.flagCount++;
+                        leftClick(xCopy, yCopy);
                     }
-
                     updateGrid();
                 };
                 
@@ -114,6 +93,33 @@ public class GameWindow : Window
                 grid.Attach(box, x, y, 1, 1);
             }
         }
+    }
+    void rightClick(int x, int y)
+    {
+        if (!board.tiles[x, y].flagged)
+        {
+            board.reveal(x, y);
+            if (board.tiles[x, y].bomb)
+            {
+                board.winState = -1;
+                board.tiles[x, y].firstBomb = true;
+            }
+        }
+        if (board.tiles[x, y].revealed)
+        {
+            board.revealAdj(new Pos(x, y), out Pos? bomb);
+            if (!(bomb == null))
+            {
+                board.winState = -1;
+                board.tiles[bomb.x, bomb.y].firstBomb = true;
+            }
+        }
+    }
+
+    void leftClick(int x, int y)
+    {
+        board.tiles[x, y].toggleFlag();
+        board.flagCount++;
     }
 
     void updateGrid()
