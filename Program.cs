@@ -270,6 +270,6 @@ class Program
 {
     static void Main(string[] args)
     {
-        GameWindow.run(10, 10);
+        GameWindow.run(10, 10); // first number represents the length of the square used in tiles, and the second number represents number of bombs
     }
 }
