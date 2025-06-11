@@ -77,11 +77,11 @@ public class GameWindow : Window
 
                     if (args.Event.Button == 1)
                     {
-                        rightClick(xCopy, yCopy);
+                        leftClick(xCopy, yCopy);
                     }
                     else if (args.Event.Button == 3)
                     {
-                        leftClick(xCopy, yCopy);
+                        rightClick(xCopy, yCopy);
                     }
                     updateGrid();
                 };
@@ -94,17 +94,8 @@ public class GameWindow : Window
             }
         }
     }
-    void rightClick(int x, int y)
+    void leftClick(int x, int y)
     {
-        if (!board.tiles[x, y].flagged)
-        {
-            board.reveal(x, y);
-            if (board.tiles[x, y].bomb)
-            {
-                board.winState = -1;
-                board.tiles[x, y].firstBomb = true;
-            }
-        }
         if (board.tiles[x, y].revealed)
         {
             board.revealAdj(new Pos(x, y), out Pos? bomb);
@@ -114,9 +105,18 @@ public class GameWindow : Window
                 board.tiles[bomb.x, bomb.y].firstBomb = true;
             }
         }
+        if (!board.tiles[x, y].flagged)
+        {
+            board.reveal(x, y);
+            if (board.tiles[x, y].bomb)
+            {
+                board.winState = -1;
+                board.tiles[x, y].firstBomb = true;
+            }
+        }
     }
 
-    void leftClick(int x, int y)
+    void rightClick(int x, int y)
     {
         board.tiles[x, y].toggleFlag();
         board.flagCount++;
