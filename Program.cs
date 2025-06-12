@@ -69,7 +69,7 @@ public class GameBoard
     int mineCount;
     public int flagCount;
     int totalTiles;
-    int revealedTiles;
+    int revealedTiles = 0;
     public Tile[,] tiles { get; private set; }
     Pos[] bombs;
     Pos? initialClick;
@@ -221,6 +221,7 @@ public class GameBoard
         }
         Pos? tempBomb = null;
         tiles[start.x, start.y].Reveal();
+        revealedTiles++;
 
         if (tiles[start.x, start.y].value == 0)
         {
@@ -237,6 +238,7 @@ public class GameBoard
                 }
             }
         }
+        // Console.WriteLine(revealedTiles);
         bomb = tempBomb;
     }
 
@@ -270,6 +272,7 @@ class Program
 {
     static void Main(string[] args)
     {
-        GameWindow.run(10, 10); // first number represents the length of the square used in tiles, and the second number represents number of bombs
+        // GameWindow.run(45, 400); // first number represents the length of the square used in tiles, and the second number represents number of bombs
+        SettingsWindow.Run();
     }
 }

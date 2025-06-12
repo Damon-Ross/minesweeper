@@ -26,8 +26,9 @@ class Assets
 
 public class GameWindow : Window
 {
-    const int Square = 34;
+    int Square = 34;
     int size;
+    int windowSize;
     GameBoard board;
     Grid grid;
     EventBox[,] tileBoxes;
@@ -41,8 +42,8 @@ public class GameWindow : Window
         board = new GameBoard(size, mineCount);
         assets = new Assets(Square);
 
-        Resize(size * Square, size * Square);
-
+        Resize(Square * size, Square * size);
+        
         tileBoxes = new EventBox[size, size];
         tileImages = new Image[size, size];
         grid = new Grid();
@@ -156,6 +157,11 @@ public class GameWindow : Window
                 }
             }
         }
+    }
+
+    void findSquareSize()
+    {
+        
     }
 
     protected override bool OnDeleteEvent(Event ev)
