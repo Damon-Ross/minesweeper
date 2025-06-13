@@ -1,6 +1,4 @@
-using System;
-using System.ComponentModel;
-using Cairo;
+using System; 
 using Gdk;
 using Gtk;
 using Window = Gtk.Window;
@@ -9,26 +7,31 @@ using static Gtk.Orientation;
 enum Difficulty { EASY, MEDIUM, HARD, EXTREME };
 public class SettingsWindow : Window
 {
-    int size;
+    int length;
+    int height;
     int bombs;
+    int square;
     Difficulty difficulty;
 
     public SettingsWindow() : base("Minesweeper")
     {
+        square = 34;
         setWidgets();
     }
 
     void setWidgets()
     {
-        Box vbox = new Box(Vertical, 5);
+        Box vbox = new Box(Vertical, 40);
+        Icon = new Pixbuf("assets/bomb.png");
 
-        Box hbox = new Box(Orientation.Horizontal, 5);
+
+        Box hbox = new Box(Horizontal, 20);
         RadioButton easy = new RadioButton("Easy");
         RadioButton medium = new RadioButton(easy, "Medium");
         RadioButton hard = new RadioButton(easy, "Hard");
         RadioButton extreme = new RadioButton(easy, "Extreme");
 
-        Box startBox = new Box(Orientation.Horizontal, 10);
+        Box startBox = new Box(Orientation.Horizontal, 100);
         Button startButton = new Button("Start");
         startBox.Add(startButton);
         startButton.Clicked += startClick;
@@ -50,29 +53,33 @@ public class SettingsWindow : Window
 
     void startClick(object? sender, EventArgs e)
     {
-        this.Hide();
-        GameWindow gameWindow = new GameWindow(size, bombs);
+        Hide();
+        GameWindow gameWindow = new GameWindow(length, height, bombs, square);   
         gameWindow.ShowAll();
     }
 
     void easyClicked(object? sender, EventArgs e)
     {
-        size = 9;
+        length = height = 9;
         bombs = 10;
     }
     void mediumClicked(object? sender, EventArgs e)
     {
-        size = 16;
+        length = height = 16;
         bombs = 40;
     }
     void hardClicked(object? sender, EventArgs e)
     {
-        size = 25;
+        square = 27;
+        length = 30;
+        height = 16;
         bombs = 99;
     }
     void extremeClicked(object? sender, EventArgs e)
     {
-        size = 45;
+        square = 20;
+        length = 55;
+        height = 30;
         bombs = 400;
     }
     protected override bool OnDeleteEvent(Event ev)

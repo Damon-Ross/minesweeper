@@ -1,4 +1,5 @@
 ﻿using System;
+
 public class GameBoard
 {
     public int winState { get; set; } = 0;
@@ -15,26 +16,27 @@ public class GameBoard
                       new Pos(-1, 0),                  new Pos(1, 0),
                       new Pos(-1, 1),  new Pos(0, 1),  new Pos(1, 1)];
 
-    public GameBoard(int mines, int length, int height = 0)
+    public GameBoard(int mineCount, int length, int height)
     {
         this.length = length;
-        this.height = height == 0 ? length : height;
-
-        mineCount = mines;
+        this.height = height;
+        this.mineCount = mineCount;
         totalTiles = this.length * this.height;
 
-        tiles = new Tile[this.height, this.length];
-        for (int i = 0; i < length; i++)
+        tiles = new Tile[height, length];
+        for (int y = 0; y < height; y++)
         {
-            for (int j = 0; j < height; j++)
+            for (int x = 0; x < length; x++)
             {
-                tiles[i, j] = new Tile(0);
+                tiles[y, x] = new Tile(0);
             }
         }
-        bombs = new Pos[mineCount];
 
+        bombs = new Pos[mineCount];
     }
-    public Tile tileAtPos(Pos pos) => tiles[pos.x, pos.y];
+
+    public Tile tileAtPos(Pos pos) => tiles[pos.y, pos.x];
+
     bool inRange(int x, int y) => (x >= 0 && x < length) && (y >= 0 && y < height);
 
     public void setBombs()
@@ -50,9 +52,9 @@ public class GameBoard
             if (Math.Abs(x - initialClick!.x) <= 1 && Math.Abs(y - initialClick.y) <= 1)
                 continue;
 
-            if (!tiles[x, y].bomb && !((x, y) == initialClick.coord()))
+            if (!tiles[y, x].bomb && !((x, y) == initialClick.coord()))
             {
-                tiles[x, y].setValue(-1);
+                tiles[y, x].setValue(-1);
                 bombs[placed] = new Pos(x, y);
                 placed++;
             }
@@ -68,9 +70,9 @@ public class GameBoard
                 Pos nextTile = bomb.Add(tile);
                 int x = nextTile.x;
                 int y = nextTile.y;
-                if (inRange(x, y) && (!tiles[x, y].bomb))
+                if (inRange(x, y) && (!tiles[y, x].bomb))
                 {
-                    tiles[x, y].value++;
+                    tiles[y, x].value++;
                 }
             }
         }
@@ -83,14 +85,13 @@ public class GameBoard
         setValues();
         initialReveal(initialClick);
 
-        for (int y = 0; y < length; y++)
+        for (int y = 0; y < height; y++)
         {
             for (int x = 0; x < length; x++)
             {
-                if (tiles[x, y].revealed)
+                if (tiles[y, x].revealed)
                 {
-                    int value = tiles[x, y].value;
-
+                    int value = tiles[y, x].value;
                     if (value == -1)
                     {
                         Console.Write("X ");
@@ -104,8 +105,6 @@ public class GameBoard
                 {
                     Console.Write("[]");
                 }
-
-
             }
             Console.WriteLine();
         }
@@ -119,7 +118,7 @@ public class GameBoard
             Pos nextTile = pos.Add(adj);
             int x = nextTile.x;
             int y = nextTile.y;
-            if (inRange(x, y) && tiles[x, y].flagged)
+            if (inRange(x, y) && tiles[y, x].flagged)
             {
                 count++;
             }
@@ -139,9 +138,9 @@ public class GameBoard
                 Pos nextTile = start.Add(adj);
                 int x = nextTile.x;
                 int y = nextTile.y;
-                if (inRange(x, y) && (!tiles[x, y].flagged))
+                if (inRange(x, y) && (!tiles[y, x].flagged))
                 {
-                    if (tiles[x, y].bomb)
+                    if (tiles[y, x].bomb)
                         tempBomb = new Pos(x, y);
                     revealEmpty(nextTile, out bomb);
                 }
@@ -150,34 +149,34 @@ public class GameBoard
         bomb = tempBomb;
     }
 
-
     public void revealEmpty(Pos start, out Pos? bomb)
     {
-
-        if (tiles[start.x, start.y].revealed)
+        if (tiles[start.y, start.x].revealed)
         {
             bomb = null;
             return;
         }
+
         Pos? tempBomb = null;
-        tiles[start.x, start.y].Reveal();
+        tiles[start.y, start.x].Reveal();
         revealedTiles++;
 
-        if (tiles[start.x, start.y].value == 0)
+        if (tiles[start.y, start.x].value == 0)
         {
             foreach (Pos adj in adjTiles)
             {
                 Pos nextTile = start.Add(adj);
                 int x = nextTile.x;
                 int y = nextTile.y;
-                if (inRange(x, y) && (!tiles[x, y].flagged))
+                if (inRange(x, y) && (!tiles[y, x].flagged))
                 {
                     revealEmpty(nextTile, out bomb);
-                    if (tiles[x, y].bomb)
+                    if (tiles[y, x].bomb)
                         tempBomb = new Pos(x, y);
                 }
             }
         }
+
         bomb = tempBomb;
     }
 
@@ -195,7 +194,6 @@ public class GameBoard
 
         int x = rnd.Next(0, length);
         int y = rnd.Next(0, height);
-
         printBoard(x, y);
     }
 
@@ -204,14 +202,16 @@ public class GameBoard
         Pos pos = new Pos(x, y);
         revealEmpty(pos, out _);
     }
-
 }
 
 class Program
 {
     static void Main(string[] args)
     {
-        // GameWindow.run(45, 400, 34); // first number represents the length of the square used in tiles, and the second number represents number of bombs
+
+        // GameBoard game = new GameBoard(10, 20, 5);
+        // game.testGenerate();
+        // GameWindow.run(20, 5, 15, 35); // first number represents the length of the square used in tiles, and the second number represents number of bombs
         SettingsWindow.Run();
     }
 }

@@ -26,8 +26,9 @@ class Assets
 
 public class GameWindow : Window
 {
-    int Square = 34;
-    int size;
+    int Square;
+    int length;
+    int height;
     int windowSize;
     GameBoard board;
     Grid grid;
@@ -36,16 +37,19 @@ public class GameWindow : Window
     Assets assets;
     bool isFirstClick = true;
 
-    public GameWindow(int size, int mineCount) : base("Minesweeper")
+    public GameWindow(int length, int height, int mineCount, int square) : base("Minesweeper")
     {
-        this.size = size;
-        board = new GameBoard(size, mineCount);
+        Square = square;
+        Icon = new Pixbuf("assets/bomb.png");
+        this.length = length;
+        this.height = height;
+        board = new GameBoard(mineCount, length, height);
         assets = new Assets(Square);
 
-        Resize(Square * size, Square * size);
-        
-        tileBoxes = new EventBox[size, size];
-        tileImages = new Image[size, size];
+        Resize(Square * length, Square * height);
+
+        tileBoxes = new EventBox[height, length];
+        tileImages = new Image[height, length];
         grid = new Grid();
 
         createGrid();
@@ -54,16 +58,17 @@ public class GameWindow : Window
 
     void createGrid()
     {
-        for (int x = 0; x < size; x++)
+        for (int y = 0; y < height; y++)
         {
-            for (int y = 0; y < size; y++)
+            for (int x = 0; x < length; x++)
             {
                 Image img = new Image(assets.tile);
-                EventBox box = [img];
+                EventBox box = new EventBox();
+                box.Add(img);
 
                 int xCopy = x;
                 int yCopy = y;
-                
+
                 box.ButtonPressEvent += (o, args) =>
                 {
                     if (board.winState == -1)
@@ -86,51 +91,51 @@ public class GameWindow : Window
                     }
                     updateGrid();
                 };
-                
 
-                tileBoxes[x, y] = box;
-                tileImages[x, y] = img;
+                tileBoxes[y, x] = box;
+                tileImages[y, x] = img;
 
                 grid.Attach(box, x, y, 1, 1);
             }
         }
     }
+
     void leftClick(int x, int y)
     {
-        if (board.tiles[x, y].revealed)
+        if (board.tiles[y, x].revealed)
         {
             board.revealAdj(new Pos(x, y), out Pos? bomb);
-            if (!(bomb == null))
+            if (bomb != null)
             {
                 board.winState = -1;
-                board.tiles[bomb.x, bomb.y].firstBomb = true;
+                board.tiles[bomb.y, bomb.x].firstBomb = true;
             }
         }
-        if (!board.tiles[x, y].flagged)
+        if (!board.tiles[y, x].flagged)
         {
             board.reveal(x, y);
-            if (board.tiles[x, y].bomb)
+            if (board.tiles[y, x].bomb)
             {
                 board.winState = -1;
-                board.tiles[x, y].firstBomb = true;
+                board.tiles[y, x].firstBomb = true;
             }
         }
     }
 
     void rightClick(int x, int y)
     {
-        board.tiles[x, y].toggleFlag();
-        board.flagCount++;
+        board.tiles[y, x].toggleFlag();
+        board.flagCount += board.tiles[y, x].flagged ? 1 : -1;
     }
 
     void updateGrid()
     {
-        for (int x = 0; x < size; x++)
+        for (int y = 0; y < height; y++)
         {
-            for (int y = 0; y < size; y++)
+            for (int x = 0; x < length; x++)
             {
-                Tile tile = board.tiles[x, y];
-                Image img = tileImages[x, y];
+                Tile tile = board.tiles[y, x];
+                Image img = tileImages[y, x];
                 if (board.winState == -1)
                 {
                     if (tile.bomb)
@@ -159,21 +164,16 @@ public class GameWindow : Window
         }
     }
 
-    void findSquareSize()
-    {
-        
-    }
-
     protected override bool OnDeleteEvent(Event ev)
     {
         Application.Quit();
         return true;
     }
 
-    public static void run(int size, int mines)
+    public static void run(int length, int height, int mines, int square)
     {
         Application.Init();
-        GameWindow window = new GameWindow(size, mines);
+        GameWindow window = new GameWindow(length, height, mines, square);
         window.ShowAll();
         Application.Run();
     }
