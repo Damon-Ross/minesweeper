@@ -1,71 +1,9 @@
 ﻿using System;
-
-public class Tile
-{
-    public bool revealed { get; set; }
-    public bool bomb { get; private set; }
-    public bool flagged { get; set; }
-    public bool firstBomb { get; set; } = false;
-    public int value;
-
-    public Tile(int value = 0, bool bomb = false, bool revealed = false)
-    {
-        this.value = value;
-        this.bomb = bomb;
-        this.revealed = revealed;
-    }
-
-    public void setValue(int value)
-    {
-        this.value = value;
-        if (this.value == -1)
-        {
-            bomb = true;
-        }
-        return;
-    }
-
-    public bool Reveal()
-    {
-        revealed = true;
-        return bomb;
-    }
-
-    public void toggleFlag()
-    {
-        if (!revealed)
-        {
-            flagged = !flagged;
-        }
-    }
-
-}
-
-public class Pos
-{
-    public int x;
-    public int y;
-
-    public Pos(int x, int y) { this.x = x; this.y = y; }
-
-    public Pos Add(Pos newPos)
-    {
-        Pos result = new Pos(x + newPos.x, y + newPos.y);
-
-        return result;
-    }
-    public override string ToString() => $"({x}, {y})";
-
-     public (int, int) coord()
-    {
-        return (x, y);
-    }
-}
-
 public class GameBoard
 {
     public int winState { get; set; } = 0;
-    public int size { get; }
+    public int length { get; }
+    public int height { get; }
     int mineCount;
     public int flagCount;
     int totalTiles;
@@ -77,16 +15,18 @@ public class GameBoard
                       new Pos(-1, 0),                  new Pos(1, 0),
                       new Pos(-1, 1),  new Pos(0, 1),  new Pos(1, 1)];
 
-    public GameBoard(int size, int mines)
+    public GameBoard(int mines, int length, int height = 0)
     {
-        this.size = size;
-        mineCount = mines;
-        totalTiles = this.size * this.size;
+        this.length = length;
+        this.height = height == 0 ? length : height;
 
-        tiles = new Tile[this.size, this.size];
-        for (int i = 0; i < size; i++)
+        mineCount = mines;
+        totalTiles = this.length * this.height;
+
+        tiles = new Tile[this.height, this.length];
+        for (int i = 0; i < length; i++)
         {
-            for (int j = 0; j < size; j++)
+            for (int j = 0; j < height; j++)
             {
                 tiles[i, j] = new Tile(0);
             }
@@ -95,7 +35,7 @@ public class GameBoard
 
     }
     public Tile tileAtPos(Pos pos) => tiles[pos.x, pos.y];
-    bool inRange(int x, int y) => (x >= 0 && x < size) && (y >= 0 && y < size);
+    bool inRange(int x, int y) => (x >= 0 && x < length) && (y >= 0 && y < height);
 
     public void setBombs()
     {
@@ -104,8 +44,8 @@ public class GameBoard
 
         while (placed < mineCount)
         {
-            int x = rnd.Next(0, size);
-            int y = rnd.Next(0, size);
+            int x = rnd.Next(0, length);
+            int y = rnd.Next(0, height);
 
             if (Math.Abs(x - initialClick!.x) <= 1 && Math.Abs(y - initialClick.y) <= 1)
                 continue;
@@ -143,9 +83,9 @@ public class GameBoard
         setValues();
         initialReveal(initialClick);
 
-        for (int y = 0; y < size; y++)
+        for (int y = 0; y < length; y++)
         {
-            for (int x = 0; x < size; x++)
+            for (int x = 0; x < length; x++)
             {
                 if (tiles[x, y].revealed)
                 {
@@ -238,7 +178,6 @@ public class GameBoard
                 }
             }
         }
-        // Console.WriteLine(revealedTiles);
         bomb = tempBomb;
     }
 
@@ -254,8 +193,8 @@ public class GameBoard
     {
         Random rnd = new Random();
 
-        int x = rnd.Next(0, size);
-        int y = rnd.Next(0, size);
+        int x = rnd.Next(0, length);
+        int y = rnd.Next(0, height);
 
         printBoard(x, y);
     }
@@ -272,7 +211,7 @@ class Program
 {
     static void Main(string[] args)
     {
-        // GameWindow.run(45, 400); // first number represents the length of the square used in tiles, and the second number represents number of bombs
+        // GameWindow.run(45, 400, 34); // first number represents the length of the square used in tiles, and the second number represents number of bombs
         SettingsWindow.Run();
     }
 }
