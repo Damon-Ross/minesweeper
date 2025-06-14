@@ -5,7 +5,7 @@ public class GameBoard
     public int winState { get; set; } = 0;
     public int length { get; }
     public int height { get; }
-    int mineCount;
+    public int mineCount { get; }
     public int flagCount;
     int totalTiles;
     int revealedTiles = 0;
@@ -186,6 +186,14 @@ public class GameBoard
         setBombs();
         setValues();
         revealEmpty(start, out _);
+    }
+
+    public void checkWin()
+    {
+        if (flagCount + revealedTiles == totalTiles)
+        {
+            winState = 1;
+        }
     }
 
     public void testGenerate()

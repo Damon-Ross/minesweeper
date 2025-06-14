@@ -8,7 +8,7 @@ using static Gtk.Orientation;
 class Assets
 {
     public Pixbuf[] numbers = new Pixbuf[9];
-    public Pixbuf? bomb, flag, tile, firstBomb, lost, smile, won;
+    public Pixbuf bomb, flag, tile, firstBomb, lost, smile, won;
 
     public Assets(int size)
     {
@@ -59,13 +59,7 @@ public class GameWindow : Window
         createGrid();
         Add(grid);
     }
-    void createMenu()
-    {
-        Box menuBox = new Box(Horizontal, 70);
-
-        Label bombCount = new Label($"{board.mineCount - board.flagCount}");
-
-    }
+    
 
     void createGrid()
     {
@@ -100,6 +94,7 @@ public class GameWindow : Window
                     {
                         rightClick(xCopy, yCopy);
                     }
+                    board.checkWin();
                     updateGrid();
                 };
 
