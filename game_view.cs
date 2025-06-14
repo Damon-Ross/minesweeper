@@ -4,11 +4,12 @@ using Gdk;
 using Gtk;
 using Window = Gtk.Window;
 using static Gtk.Orientation;
+using System.Numerics;
 
 class Assets
 {
     public Pixbuf[] numbers = new Pixbuf[9];
-    public Pixbuf bomb, flag, tile, firstBomb, lost, smile, won;
+    public Pixbuf bomb, flag, tile, firstBomb, lost, smile, won, back;
 
     public Assets(int size)
     {
@@ -22,9 +23,10 @@ class Assets
         flag = new Pixbuf("assets/flag.png", size, size);
         tile = new Pixbuf("assets/tile.png", size, size);
         firstBomb = new Pixbuf("assets/firstBomb.png", size, size);
-        lost = new Pixbuf("assets/lost.png");
-        smile = new Pixbuf("assets/smile.png");
-        won = new Pixbuf("assets/won.png");
+        lost = new Pixbuf("assets/lost.png", size, size);
+        smile = new Pixbuf("assets/smile.png", size, size);
+        won = new Pixbuf("assets/won.png", size, size);
+        back = new Pixbuf("assets/back.png", size, size);
     }
 }
 
@@ -33,16 +35,19 @@ public class GameWindow : Window
     int Square;
     int length;
     int height;
-    int windowSize;
     GameBoard board;
     Grid grid;
+    Box menuBox;
     EventBox[,] tileBoxes;
     Image[,] tileImages;
     Assets assets;
+    Label? bombCountLabel;
+    Image? iconImage;
     bool isFirstClick = true;
 
     public GameWindow(int length, int height, int mineCount, int square) : base("Minesweeper")
     {
+        
         Square = square;
         Icon = new Pixbuf("assets/bomb.png");
         this.length = length;
@@ -50,16 +55,56 @@ public class GameWindow : Window
         board = new GameBoard(mineCount, length, height);
         assets = new Assets(Square);
 
-        Resize(Square * length, Square * height);
+        // Resize(Square * length, Square * (height + 1));
 
         tileBoxes = new EventBox[height, length];
         tileImages = new Image[height, length];
         grid = new Grid();
-
+        menuBox = new Box(Horizontal, 70);
+        createMenu();
         createGrid();
-        Add(grid);
+        Box vbox = new Box(Vertical, 10);
+        vbox.Add(menuBox);
+        vbox.Add(grid);
+        Add(vbox);
     }
+    void createMenu()
+    {
+        bombCountLabel = new Label("");
+        iconImage = new Image();
+        Image back = new Image(assets.back);
+
+        EventBox backButton = new EventBox();
+        backButton.Add(back);
+        backButton.ButtonPressEvent += (o, args) =>
+        {
+            Hide();
+            SettingsWindow.Run();
+        };
+
+        menuBox.Add(bombCountLabel);
+        menuBox.Add(iconImage);
+        menuBox.Add(backButton);
+        updateMenu();
+    }
+
+    void updateMenu()
+    {
+        bombCountLabel!.Text = $"{board.mineCount - board.flagCount}";
+        if (board.winState == -1)
+        {
+            iconImage!.Pixbuf = assets.lost;
+        }
+        else if (board.winState == 1)
+        {
+            iconImage!.Pixbuf = assets.won;
+        }
+        else
+        {
+            iconImage!.Pixbuf = assets.smile;
+        }
     
+    }
 
     void createGrid()
     {
@@ -96,6 +141,7 @@ public class GameWindow : Window
                     }
                     board.checkWin();
                     updateGrid();
+                    updateMenu();
                 };
 
                 tileBoxes[y, x] = box;
@@ -130,8 +176,11 @@ public class GameWindow : Window
 
     void rightClick(int x, int y)
     {
-        board.tiles[y, x].toggleFlag();
-        board.flagCount += board.tiles[y, x].flagged ? 1 : -1;
+        if (!board.tiles[y, x].revealed)
+        {
+            board.tiles[y, x].toggleFlag();
+            board.flagCount += board.tiles[y, x].flagged ? 1 : -1;
+        }
     }
 
     void updateGrid()
