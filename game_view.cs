@@ -3,11 +3,12 @@ using Cairo;
 using Gdk;
 using Gtk;
 using Window = Gtk.Window;
+using static Gtk.Orientation;
 
 class Assets
 {
     public Pixbuf[] numbers = new Pixbuf[9];
-    public Pixbuf? bomb, flag, tile, firstBomb;
+    public Pixbuf? bomb, flag, tile, firstBomb, lost, smile, won;
 
     public Assets(int size)
     {
@@ -21,6 +22,9 @@ class Assets
         flag = new Pixbuf("assets/flag.png", size, size);
         tile = new Pixbuf("assets/tile.png", size, size);
         firstBomb = new Pixbuf("assets/firstBomb.png", size, size);
+        lost = new Pixbuf("assets/lost.png");
+        smile = new Pixbuf("assets/smile.png");
+        won = new Pixbuf("assets/won.png");
     }
 }
 
@@ -54,6 +58,13 @@ public class GameWindow : Window
 
         createGrid();
         Add(grid);
+    }
+    void createMenu()
+    {
+        Box menuBox = new Box(Horizontal, 70);
+
+        Label bombCount = new Label($"{board.mineCount - board.flagCount}");
+
     }
 
     void createGrid()
