@@ -37,8 +37,8 @@ Once the difficulty level is selected, press the start button to generate the ga
 
 ### Menu Bar
 - Remaining mine count shows number of flags remaining to cover all mines. This counts regardless of if the flagged tiles are bombs or not
-- Win state given by a face asset, frowning if you lose and having sunglasses if you win
 - Includes back button to go back to the settings page. This abandons the current minesweeper game
+- Win state given by a face asset, frowning if you lose and having sunglasses if you win
 
 |Neutral| Win |Lose |
 |:---:|:---:|:---:|
