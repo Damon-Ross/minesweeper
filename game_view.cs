@@ -1,10 +1,7 @@
-using System;
-using Cairo;
 using Gdk;
 using Gtk;
 using Window = Gtk.Window;
 using static Gtk.Orientation;
-using System.Numerics;
 
 class Assets
 {
@@ -61,8 +58,12 @@ public class GameWindow : Window
         tileImages = new Image[height, length];
         grid = new Grid();
         menuBox = new Box(Horizontal, 70);
+        menuBox.Halign = Align.Center;
+        menuBox.Valign = Align.Center;
         createMenu();
         createGrid();
+        grid.Halign = Align.Center;
+        grid.Valign = Align.Center;
         Box vbox = new Box(Vertical, 10);
         vbox.Add(menuBox);
         vbox.Add(grid);

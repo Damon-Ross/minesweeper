@@ -18,12 +18,15 @@ public class SettingsWindow : Window
         Icon = new Pixbuf("assets/bomb.png");
 
         Box hbox = new Box(Horizontal, 20);
+        hbox.Halign = Align.Center;
         RadioButton easy = new RadioButton("Easy");
         RadioButton medium = new RadioButton(easy, "Medium");
         RadioButton hard = new RadioButton(easy, "Hard");
         RadioButton extreme = new RadioButton(easy, "Extreme");
 
         Box startBox = new Box(Horizontal, 100);
+        startBox.Halign = Align.Center;
+        startBox.Valign = Align.Center;
         Button startButton = new Button("Start");
         startBox.Add(startButton);
         startButton.Clicked += startClick;
@@ -47,7 +50,7 @@ public class SettingsWindow : Window
     void startClick(object? sender, EventArgs e)
     {
         Hide();
-        GameWindow gameWindow = new GameWindow(length, height, bombs, square);   
+        GameWindow gameWindow = new GameWindow(length, height, bombs, square);
         gameWindow.ShowAll();
     }
 
@@ -82,7 +85,6 @@ public class SettingsWindow : Window
         Application.Quit();
         return true;
     }
-
     public static void Run()
     {
         Application.Init();
